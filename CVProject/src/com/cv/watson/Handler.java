@@ -1,6 +1,5 @@
 package com.cv.watson;
 
-import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifierOptions;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.DoubleBinaryOperator;
 
 /**
  * Created by Ray on 2016/10/6.
@@ -20,9 +18,13 @@ public class Handler {
     public static final String NEGATIVE = "negative";
 
     private final String apiKey;
+    private final Trainer trainer;
+    private final Tester tester;
 
     public Handler(String apiKey) {
         this.apiKey = apiKey;
+        this.trainer = new Trainer(apiKey);
+        this.tester = new Tester(apiKey);
     }
 
     /* the Entry of whole application
@@ -45,33 +47,40 @@ public class Handler {
     * @param negativeDirectory directory of negative images
     * @return a Map containing roc points
     * */
-    public static Map<Double, Double> handleAnimal(File positiveDirectory, File negativeDirectory) throws Exception {
+    public Map<Double, Double> handleAnimal(File positiveDirectory, File negativeDirectory) throws Exception {
         String name = positiveDirectory.getName();
 
         File positiveZipFile = new File(positiveDirectory.getPath() + "\\train_positive" + name + ".zip");
         File negativeZipFile = new File(negativeDirectory.getPath() + "\\train_negative" + name + ".zip");
 //            File testZipFile = new File(animalDirectoryPath + "\\test_" + name + ".zip");
 
+
         Map<String, List<File>> testMap =
-                Trainer.getZips(positiveDirectory, negativeDirectory, positiveZipFile, negativeZipFile);
+                trainer.getZips(positiveDirectory, negativeDirectory, positiveZipFile, negativeZipFile);
 
         List<VisualClassification> positiveClassifications = new ArrayList<>();
         List<VisualClassification> negativeClassifications = new ArrayList<>();
         // train
-        VisualClassifier classifier = Trainer.createClassfier(Trainer.createClassifierOptions(
+        VisualClassifier classifier = trainer.createClassfier(trainer.createClassifierOptions(
                 name,
                 positiveZipFile,
                 negativeZipFile
         ));
 
+        System.out.println("+++++++++++++++++Positive+++++++++++++++++");
+        int count = 0;
         // test positive images
         for (File testFile : testMap.get(POSITIVE)) {
-            positiveClassifications.add(Tester.classify(testFile, classifier));
+            positiveClassifications.add(tester.classify(testFile, classifier));
+            System.out.println(++count);
         }
 
-        //test negative images
+        count = 0;
+        System.out.println("+++++++++++++++++Negative+++++++++++++++++");
+        // test negative images
         for (File testFile : testMap.get(NEGATIVE)) {
-            negativeClassifications.add(Tester.classify(testFile, classifier));
+            negativeClassifications.add(tester.classify(testFile, classifier));
+            System.out.println(++count);
         }
 
         // positive

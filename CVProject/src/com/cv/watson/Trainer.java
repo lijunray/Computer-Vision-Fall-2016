@@ -1,6 +1,7 @@
 package com.cv.watson;
 
 
+import com.cv.Main;
 import com.ibm.watson.developer_cloud.util.Validator;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ClassifierOptions;
@@ -25,6 +26,11 @@ public class Trainer {
 //    private static final String PARAM_NEGATIVE_EXAMPLES = "negative_examples";
 
     private static byte[] buffer = new byte[2048];
+    private final String apiKey;
+
+    public Trainer(String apiKey) {
+        this.apiKey = apiKey;
+    }
 
     /*
       *
@@ -33,7 +39,7 @@ public class Trainer {
       * @param testZipFile test zip file to be written into
       * @return test file array
      */
-    public static Map<String, List<File>> getZips(File positiveDirectory, File negativeDirectory, File positiveZipFile,
+    public Map<String, List<File>> getZips(File positiveDirectory, File negativeDirectory, File positiveZipFile,
                                File negativeZipFile) throws Exception {
         System.out.println(positiveDirectory.getPath());
         System.out.println(negativeDirectory.getPath());
@@ -93,7 +99,7 @@ public class Trainer {
     * @param negativeExample negative zip file
     * @return new ClassifierOptions object
     * */
-    public static ClassifierOptions createClassifierOptions(String classifierName, File positiveExample, File negativeExample) {
+    public ClassifierOptions createClassifierOptions(String classifierName, File positiveExample, File negativeExample) {
         return new ClassifierOptions.Builder()
                 .classifierName(classifierName)
                 .addClass(classifierName, positiveExample)
@@ -105,11 +111,11 @@ public class Trainer {
     * @param options options of classifier
     * @return VisualClassifier
     * */
-    public static VisualClassifier createClassfier(ClassifierOptions options) {
+    public VisualClassifier createClassfier(ClassifierOptions options) {
         Validator.notNull(options, "options cannot be null");
 
         VisualRecognition service =
-                new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20, Handler.API_KEY);
+                new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20, this.apiKey);
 
         // get all classifiers in server
         List<VisualClassifier> classifiers = service.getClassifiers().execute();
@@ -117,11 +123,11 @@ public class Trainer {
         // delete classifiers if one exists in server
         if (!classifiers.isEmpty()) {
             service.deleteClassifier(classifiers.get(0).getId()).execute();
-            System.out.println("deleted classifier");
+            System.out.println("Deleted classifier");
         }
 
         VisualClassifier classifier = service.createClassifier(options).execute();
-        System.out.println("created classifier:" + classifier.getName() + " with id of " + classifier.getId());
+        System.out.println("Created classifier:" + classifier.getName() + " with id of " + classifier.getId());
         return classifier;
 
     }
@@ -131,7 +137,7 @@ public class Trainer {
     * @param baseFolder base folder
     * @param out file to be written into
     * */
-    public static void zip(List<File> files, String baseFolder, File out) throws Exception {
+    public void zip(List<File> files, String baseFolder, File out) throws Exception {
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(out));
         FileInputStream fis;
         ZipEntry entry;
@@ -154,7 +160,7 @@ public class Trainer {
     * @param size count of random numbers
     * @return a set including all generated random numbers
     * */
-    public static Set<Integer> getRandomSet(int bound, int size) {
+    public Set<Integer> getRandomSet(int bound, int size) {
         Set<Integer> randomSet = new HashSet<>();
         while (randomSet.size() < size) {
             int randomNumber = new Random().nextInt(bound);
