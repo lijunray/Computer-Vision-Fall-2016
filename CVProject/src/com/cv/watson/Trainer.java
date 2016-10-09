@@ -66,10 +66,10 @@ public class Trainer {
 
         for (int i = 0; i < positiveCount; i++) {
             if (randomPositiveNumbers.contains(i)) {
-                trainPositiveFiles.add(trainNegativeImages.get(i));
+                trainPositiveFiles.add(trainPositiveImages.get(i));
             }
             else {
-                testPositiveFiles.add(trainNegativeImages.get(i));
+                testPositiveFiles.add(trainPositiveImages.get(i));
             }
         }
 
@@ -111,25 +111,39 @@ public class Trainer {
     * @param options options of classifier
     * @return VisualClassifier
     * */
-    public VisualClassifier createClassfier(ClassifierOptions options) {
+    public VisualClassifier createClassifier(ClassifierOptions options) {
         Validator.notNull(options, "options cannot be null");
+        VisualClassifier classifier = fetchClassifier();
+        VisualRecognition service =
+                new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20, this.apiKey);
+        // delete classifiers if one exists in server
+        if (classifier != null) {
+            System.out.println("Deleting classifier...");
+            service.deleteClassifier(classifier.getId()).execute();
+            System.out.println("Deleted classifier");
+        }
 
+        System.out.println("Creating classifier...");
+        VisualClassifier newClassifier = service.createClassifier(options).execute();
+        System.out.println("Created classifier:" + newClassifier.getName() + " with id of " + newClassifier.getId());
+        return newClassifier;
+    }
+
+    /*
+    * @return the classifier fetched from server
+    * */
+    public VisualClassifier fetchClassifier() {
         VisualRecognition service =
                 new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20, this.apiKey);
 
         // get all classifiers in server
+        System.out.println("Fetching classifiers...");
         List<VisualClassifier> classifiers = service.getClassifiers().execute();
         System.out.println("Got classifiers");
-        // delete classifiers if one exists in server
         if (!classifiers.isEmpty()) {
-            service.deleteClassifier(classifiers.get(0).getId()).execute();
-            System.out.println("Deleted classifier");
+            return classifiers.get(0);
         }
-
-        VisualClassifier classifier = service.createClassifier(options).execute();
-        System.out.println("Created classifier:" + classifier.getName() + " with id of " + classifier.getId());
-        return classifier;
-
+        return null;
     }
 
     /*
@@ -143,7 +157,7 @@ public class Trainer {
         ZipEntry entry;
         int count;
         for (File file : files) {
-            if (file.isDirectory()) {
+            if (file.isDirectory() || file.getPath().endsWith(".zip")) {
                 continue;
             }
             entry = new ZipEntry(baseFolder + file.getName());

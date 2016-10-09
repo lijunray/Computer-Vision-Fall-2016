@@ -17,5 +17,6 @@ This program is to randomly select 80% positive and negative pictures for traini
 
 ### TODO
 
+- Add properties file to avoid code modifying
 - Generate ROC plot based on ROC points.
 - Get confidence intervals

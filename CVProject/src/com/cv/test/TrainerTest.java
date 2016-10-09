@@ -3,10 +3,7 @@ package com.cv.test;
 import com.cv.Main;
 
 import com.cv.watson.Handler;
-import com.cv.watson.Tester;
-import com.cv.watson.Trainer;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
-import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 import org.junit.Test;
 
@@ -40,7 +37,7 @@ public class TrainerTest {
         String name = animalDirectory.getName();
         File positiveZipFile = new File(animalDirectoryPath + "\\train_positive_" + name + ".zip");
         File negativeZipFile = new File(wrongDirectoryPath + "\\train_negative" + ".zip");
-//        VisualClassifier classifier = Trainer.createClassfier(Trainer.createClassifierOptions("camel", positiveZipFile, negativeZipFile));
+//        VisualClassifier classifier = Trainer.createClassifier(Trainer.createClassifierOptions("camel", positiveZipFile, negativeZipFile));
 //        System.out.println(classifier.getId());
     }
 
@@ -63,8 +60,24 @@ public class TrainerTest {
     public void testTrainAAnimal() throws Exception {
         String positiveDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\positive\\camel";
         String negativeDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\negative";
-        Handler handler = new Handler(Main.API_KEY);
-        Map<Double, Double> map = handler.handleAnimal(new File(positiveDirectoryPath), new File(negativeDirectoryPath));
+        Handler handler = new Handler(Main.API_KEY, 0.001);
+        Map<Double, Double> map = handler.createAndHandle(new File(positiveDirectoryPath), new File(negativeDirectoryPath));
         System.out.println(map);
+    }
+
+    @Test
+    public void testClassifier() throws Exception {
+        String positiveDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\positive\\camel";
+        String negativeDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\negative";
+        Handler handler = new Handler(Main.API_KEY, 0.001);
+        Map<Double, Double> map = handler.fetchAndHandle(new File(positiveDirectoryPath), new File(negativeDirectoryPath));
+        System.out.println(map);
+    }
+
+    @Test
+    public void test1() {
+        String path = System.getProperty("user.dir") + "\\resource\\pictures\\negative\\test.zip";
+        File testFile = new File(path);
+        System.out.printf(String.valueOf(testFile.getName().endsWith(".zip")));
     }
 }
