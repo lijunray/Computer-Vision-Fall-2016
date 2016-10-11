@@ -4,152 +4,155 @@ import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifi
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * Created by Ray on 2016/10/6.
+ * Created by Ray on 2016/10/10.
  */
 public class Handler {
+
 
     public static final String POSITIVE = "positive";
     public static final String NEGATIVE = "negative";
 
-    private final String apiKey;
-    private final Trainer trainer;
-    private final Tester tester;
-    private double offset;
+    /**
+     * This method is to get ROC points
+     * (Selector) random number -> files selected from positive directory (non-selected files are saved for testing)
+     * -> zip files as positive zip file -> (Trainer) fetch classifier from server -> delete existed classifier
+     * -> create new classifier with classes -> select and zip testToIndex files as testing zip file
+     * -> (Tester) classify testing zip file -> scores -> (Calculator) TPR and NFR -> Map<TPR, NFR>
+     *
+     */
+    public static Map<String, List<Double>> handle(String apiKey,
+                                                   String positiveDirectoryPath,
+                                                   String negativeDirectoryPath,
+                                                   double offset,
+                                                   int count,
+                                                   String classifierName,
+                                                   int testCount,
+                                                   long sleepTime) throws Exception {
 
-    public Handler(String apiKey, double offset) {
-        this.apiKey = apiKey;
-        this.offset = offset;
-        this.trainer = new Trainer(apiKey);
-        this.tester = new Tester(apiKey);
-    }
-
-    /* the Entry of whole application
-    * @return a map of 3 kinds of animals' results of ROC points
-    */
-    public Map<String, Map<Double, Double>> handle(String negativeDirectoryPath, String ...positiveDirecotryPaths) throws Exception {
+        List<File> positiveDirectories = Arrays.asList(new File(positiveDirectoryPath).listFiles());
+        List<File> positiveFiles = new ArrayList<>();
         File negativeDirectory = new File(negativeDirectoryPath);
-        Map<String, Map<Double, Double>> allRocPoints = new HashMap<>();
-        for (String positiveDirectoryPath : positiveDirecotryPaths) {
-            File positiveDirectory = new File(positiveDirectoryPath);
-            Map<Double, Double> points = createAndHandle(positiveDirectory, negativeDirectory);
-            allRocPoints.put(positiveDirectory.getName(), points);
+
+        List<File> positiveZipFiles = new ArrayList<>();
+
+        for (File positiveDirectory : positiveDirectories) {
+            if (!positiveDirectory.isDirectory()) {
+                continue;
+            }
+            positiveFiles.addAll(Arrays.asList(positiveDirectory.listFiles()));
+            String name = positiveDirectory.getName();
+            List<File> randomPositiveFiles = Selector.select(positiveDirectory, count);
+            // zip files
+            File zipFile = new File(positiveDirectory.getPath() + name + ".zip");
+            Selector.zip(randomPositiveFiles, "", zipFile);
+            positiveZipFiles.add(zipFile);
         }
 
-        return allRocPoints;
-    }
+        List<File> randomNegativeFiles = Selector.select(negativeDirectory, count);
+        File negativeZipFile = new File(negativeDirectory.getPath() + "\\negative.zip");
+        Selector.zip(randomNegativeFiles, "", negativeZipFile);
 
-    /* create a classifier then classify
-    * @param positiveDirectory directory of positive images
-    * @param negativeDirectory directory of negative images
-    * @return a Map containing roc points
-    * */
-    public Map<Double, Double> createAndHandle(File positiveDirectory, File negativeDirectory) throws Exception {
-        String name = positiveDirectory.getName();
+        List<File> negativeFiles = Arrays.asList(negativeDirectory.listFiles());
 
-        File positiveZipFile = new File(positiveDirectory.getPath() + "\\train_positive" + name + ".zip");
-        File negativeZipFile = new File(negativeDirectory.getPath() + "\\train_negative" + name + ".zip");
-//            File testZipFile = new File(animalDirectoryPath + "\\test_" + name + ".zip");
+        VisualClassifier classifier = Trainer.createClassifier(Trainer.createClassifierOptions(positiveZipFiles, negativeZipFile, classifierName), apiKey);
 
+        List<File> positiveTestFiles = Selector.selectTestFiles(positiveFiles, testCount);
+        List<File> negativeTestFiles = Selector.selectTestFiles(negativeFiles, testCount);
 
-        Map<String, List<File>> testMap =
-                trainer.getZips(positiveDirectory, negativeDirectory, positiveZipFile, negativeZipFile);
+        File positiveTestZipFile = new File(positiveDirectoryPath + "\\positive_test.zip");
+        File negativeTestZipFile = new File(negativeDirectoryPath + "\\negative_test.zip");
 
-        List<VisualClassification> positiveClassifications = new ArrayList<>();
-        List<VisualClassification> negativeClassifications = new ArrayList<>();
-        // train
-        VisualClassifier classifier = trainer.createClassifier(trainer.createClassifierOptions(
-                name,
-                positiveZipFile,
-                negativeZipFile
-        ));
+        positiveTestZipFile.delete();
+        negativeTestZipFile.delete();
 
-        return getPoints(testMap, positiveClassifications, negativeClassifications, classifier);
-    }
+        Selector.zip(positiveTestFiles, "", positiveTestZipFile);
+        Selector.zip(negativeTestFiles, "", negativeTestZipFile);
 
-    /* fetch a classifier then classify
-    * @param positiveDirectory directory of positive images
-    * @param negativeDirectory directory of negative images
-    * @return a Map containing roc points
-    * */
-    public Map<Double, Double> fetchAndHandle(File positiveDirectory, File negativeDirectory) throws Exception {
-        String name = positiveDirectory.getName();
-
-        File positiveZipFile = new File(positiveDirectory.getPath() + "\\train_positive" + name + ".zip");
-        File negativeZipFile = new File(negativeDirectory.getPath() + "\\train_negative" + name + ".zip");
-//            File testZipFile = new File(animalDirectoryPath + "\\test_" + name + ".zip");
-
-
-        Map<String, List<File>> testMap =
-                trainer.getZips(positiveDirectory, negativeDirectory, positiveZipFile, negativeZipFile);
-
-        List<VisualClassification> positiveClassifications = new ArrayList<>();
-        List<VisualClassification> negativeClassifications = new ArrayList<>();
-        // train
-        VisualClassifier classifier = trainer.fetchClassifier();
-
-        return getPoints(testMap, positiveClassifications, negativeClassifications, classifier);
-    }
-
-    /*
-    * @param testMap[POSITIVE] -> list of positive testing files
-    * @param testMap[NEGATIVE] -> list of negative testing files
-    * @param positiveClassifications positive classifications
-    * @param negativeClassifications negative classifications
-    * @param classifier classifier to be classified
-    * @return ROC points
-    * */
-    public Map<Double, Double> getPoints(Map<String, List<File>> testMap,
-                                         List<VisualClassification> positiveClassifications,
-                                         List<VisualClassification> negativeClassifications,
-                                         VisualClassifier classifier) throws Exception {
         System.out.println("+++++++++++++++++Positive+++++++++++++++++");
-        int count = 0;
-        // test positive images
-        for (File testFile : testMap.get(POSITIVE)) {
-            positiveClassifications.add(tester.classify(testFile, classifier));
-            // Rest for 5 seconds
-            System.out.println("A classify finished, Waiting for 5s to start another...");
-            Thread.sleep(5000);
-            System.out.println(++count);
-        }
+        VisualClassification positiveClassification = Tester.classify(positiveTestZipFile, classifier, apiKey);
 
-        count = 0;
+        System.out.println("Sleep for " + sleepTime / 1000 + "seconds...");
+        Thread.sleep(sleepTime);
+
         System.out.println("+++++++++++++++++Negative+++++++++++++++++");
-        // test negative images
-        for (File testFile : testMap.get(NEGATIVE)) {
-            negativeClassifications.add(tester.classify(testFile, classifier));
-            System.out.println("A classify finished, Waiting for 5s to start another...");
-            Thread.sleep(5000);
-            System.out.println(++count);
-        }
+        VisualClassification negativeClassification = Tester.classify(negativeTestZipFile, classifier, apiKey);
 
-        // Get positive scores
-        List<Double> positiveScores = new ArrayList<>();
-        for (VisualClassification classification : positiveClassifications) {
-            positiveScores.add(Calculator.getScore(classification));
-        }
-        // Get negative scores
-        List<Double> negativeScores = new ArrayList<>();
-        for (VisualClassification classification : negativeClassifications) {
-            negativeScores.add(Calculator.getScore(classification));
-        }
+        List<Double> positiveScores = Calculator.getScores(positiveClassification);
+        List<Double> negativeScores = Calculator.getScores(negativeClassification);
 
-        // calculate TPRs
-        List<Double> tprs = Calculator.calculateRates(positiveScores, offset, Calculator.FLAG_TPR);
+        Map<String, List<Double>> map = new HashMap<>();
 
-        // calculate FNRs
-        List<Double> fnrs = Calculator.calculateRates(positiveScores, offset, Calculator.FLAG_FNR);
+        map.put(POSITIVE, positiveScores);
+        map.put(NEGATIVE, negativeScores);
 
-        // calculate points
-        Map<Double, Double> points = Calculator.calculatePoints(tprs, fnrs);
+//        List<Double> tprs = Calculator.calculateRates(positiveScores, Calculator.FLAG_TPR, offset);
+//        List<Double> fnrs = Calculator.calculateRates(negativeScores, Calculator.FLAG_FNR, offset);
 
-        return points;
+//        return Calculator.calculatePoints(tprs, fnrs);
+        return map;
     }
 
+    public static Map<String, List<Double>> classify(String apiKey,
+                                                     String positiveDirectoryPath,
+                                                     String negativeDirectoryPath,
+                                                     int testCount,
+                                                     long sleepTime) throws Exception {
+        VisualClassifier classifier = Trainer.fetchClassifier(apiKey);
+        if (classifier == null) {
+            return null;
+        }
+        List<File> positiveFiles = new ArrayList<>();
+        File positiveDirectory = new File(positiveDirectoryPath);
+        for (File file : positiveDirectory.listFiles()) {
+            if (file.isDirectory()) {
+                positiveFiles.addAll(Arrays.asList(file.listFiles()));
+            }
+        }
+
+        List<File> negativeFiles = Arrays.asList(new File(negativeDirectoryPath).listFiles());
+
+        List<File> positiveTestFiles = Selector.selectTestFiles(positiveFiles, testCount);
+        List<File> negativeTestFiles = Selector.selectTestFiles(negativeFiles, testCount);
+
+        File positiveTestZipFile = new File(positiveDirectoryPath + "\\positive_test.zip");
+        File negativeTestZipFile = new File(negativeDirectoryPath + "\\negative_test.zip");
+
+        System.out.println(positiveTestZipFile.getPath());
+        System.out.println(positiveTestFiles.size());
+        System.out.println(negativeTestZipFile.getPath());
+        System.out.println(negativeTestFiles.size());
+
+        if (positiveTestZipFile.exists()) {
+            positiveTestZipFile.delete();
+        }
+        if (negativeTestZipFile.exists()) {
+            negativeTestZipFile.delete();
+        }
+
+        Selector.zip(positiveTestFiles, "", positiveTestZipFile);
+        Selector.zip(negativeTestFiles, "", negativeTestZipFile);
+
+        System.out.println("+++++++++++++++++Positive+++++++++++++++++");
+        VisualClassification positiveClassification = Tester.classify(positiveTestZipFile, classifier, apiKey);
+        System.out.println(positiveClassification);
+
+        System.out.println("Sleep for " + sleepTime / 1000 + "seconds...");
+        Thread.sleep(sleepTime);
+
+        System.out.println("+++++++++++++++++Negative+++++++++++++++++");
+        VisualClassification negativeClassification = Tester.classify(negativeTestZipFile, classifier, apiKey);
+        System.out.println(negativeClassification);
+
+        List<Double> positiveScores = Calculator.getScores(positiveClassification);
+        List<Double> negativeScores = Calculator.getScores(negativeClassification);
+
+        Map<String, List<Double>> map = new HashMap<>();
+
+        map.put(POSITIVE, positiveScores);
+        map.put(NEGATIVE, negativeScores);
+        return map;
+    }
 }

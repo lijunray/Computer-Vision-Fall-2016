@@ -9,14 +9,41 @@ This program is to randomly select 80% positive and negative pictures for traini
 ### How to use it
 
 - This project is based on IntelliJ 14.1.5, so please open it with it.
-- Directly under /src there is a Main class. Put your API Key, positive directories, negative directory there. 
-- There is a resource folder, where you can put your own pictures there. But please add the path by yourself.
-- All points are given out automatically to a Map, say if you have a folder named "camel", then you can get all points by `map["camel"]`.
+
+- Edit the `info.properties` file to give necessary information the program needs.
+
+- There is a `resource` directory, where you can put your own pictures there. Default setting for the path is set to `resource` directory. That means if you put your pictures there, you should delete `POSITIVE_DIRECTORY_PATH` and `NEGATIVE_DIRECTORY_PATH` properties in the `info.properties` since the program doesn't need those values;
+
+- You can also put your images anywhere, but you should add `POSITIVE_DIRECTORY_PATH` and `NEGATIVE_DIRECTORY_PATH` to point to your directory's path.
+
+- The resource structure should be like below (pay attention to `positive` directory's path):
+
+  CVProject
+
+  |---- resource
+
+  |      |---- pictures
+
+  |      |      |---- positive
+
+  |      |      |      |---- cat
+
+  |      |      |      |      |---- cat1.jpg
+
+  |      |      |      |      |---- ...
+
+  |      |      |      |---- dog
+
+  |      |      |---- negative
+
+  |      |      |      |---- neg1.jpg
+
+  |      |      |      |---- ...
+
+- Add necessary dependencies by maven.
 
 
 
 ### TODO
 
-- Add properties file to avoid code modifying
-- Generate ROC plot based on ROC points.
 - Get confidence intervals

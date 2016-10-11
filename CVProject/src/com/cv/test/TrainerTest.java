@@ -2,14 +2,19 @@ package com.cv.test;
 
 import com.cv.Main;
 
+import com.cv.watson.Calculator;
+import com.cv.watson.Drawer;
 import com.cv.watson.Handler;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Created by Ray on 2016/10/6.
@@ -43,35 +48,42 @@ public class TrainerTest {
 
     @Test
     public void testClassifyAnimal() throws Exception {
-        String path = System.getProperty("user.dir") + "\\resource\\pictures\\positive\\camel\\test_camel\\images (32).jpg";
-        VisualRecognition service =
-                new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20, Main.API_KEY);
+        String path = System.getProperty("user.dir") + "\\resource\\pictures\\positive\\camel\\camel.zip";
+//        VisualRecognition service =
+//                new VisualRecognition(VisualRecognition.VERSION_DATE_2016_05_20, Main.API_KEY);
 
         // get all classifiers in server
-        List<VisualClassifier> classifiers = service.getClassifiers().execute();
-//        VisualClassification classification = Tester.classify(new File(path), classifiers.get(0));
-
-        for (double treshhold = 0; treshhold <= 1; treshhold += 0.001) {
-
-        }
+//        List<VisualClassifier> classifiers = service.getClassifiers().execute();
+//        VisualClassification classification = new Tester(Main.API_KEY).classify(new File(path), classifiers.get(0), apiKey);
+//        System.out.println(classification);
     }
 
-    @Test
-    public void testTrainAAnimal() throws Exception {
-        String positiveDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\positive\\camel";
-        String negativeDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\negative";
-        Handler handler = new Handler(Main.API_KEY, 0.001);
-        Map<Double, Double> map = handler.createAndHandle(new File(positiveDirectoryPath), new File(negativeDirectoryPath));
-        System.out.println(map);
-    }
+//    @Test
+//    public void testTrainAAnimal() throws Exception {
+//        String positiveDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\positive\\camel";
+//        String negativeDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\negative";
+//        System.out.println(map);
+//      }
 
     @Test
     public void testClassifier() throws Exception {
-        String positiveDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\positive\\camel";
+        String positiveDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\positive";
         String negativeDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\negative";
-        Handler handler = new Handler(Main.API_KEY, 0.001);
-        Map<Double, Double> map = handler.fetchAndHandle(new File(positiveDirectoryPath), new File(negativeDirectoryPath));
-        System.out.println(map);
+//        Map<String, List<Double>> map = Handler.classify(Main.API_KEY, positiveDirectoryPath, negativeDirectoryPath, Main.TEST_COUNT, Main.SLEEP_TIME);
+//        System.out.println(map);
+//        Set<String> keys = map.keySet();
+//        System.out.println("scores:");
+//        for (String key : keys) {
+//            System.out.println("---------------" + key + "----------------------");
+//            for (Double score : map.get(key)) {
+//                System.out.println(score);
+//            }
+//        }
+//        double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), Calculator.FLAG_TPR, Main.OFFSET);
+//        double[] fnrs = Calculator.calculateRates(map.get(Handler.NEGATIVE), Calculator.FLAG_FNR, Main.OFFSET);
+//
+//        Drawer.draw(Main.PLOT_NAME, Main.PLOT_TITLE, Main.PLOT_WIDTH, Main.PLOT_HEIGHT, tprs, fnrs);
+
     }
 
     @Test
@@ -79,5 +91,12 @@ public class TrainerTest {
         String path = System.getProperty("user.dir") + "\\resource\\pictures\\negative\\test.zip";
         File testFile = new File(path);
         System.out.printf(String.valueOf(testFile.getName().endsWith(".zip")));
+    }
+
+    @Test
+    public void testProperties() throws IOException {
+        File info = new File(System.getProperty("user.dir") + "\\info.properties");
+        Properties properties = Main.getProperties(info);
+        System.out.println(properties.getProperty("COUNT").getClass());
     }
 }

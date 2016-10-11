@@ -1,5 +1,6 @@
 package com.cv.watson;
 
+import com.ibm.watson.developer_cloud.visual_recognition.v3.model.ImageClassification;
 import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassification;
 
 import java.util.*;
@@ -22,12 +23,20 @@ public class Calculator {
         return score;
     }
 
-    /*
+    public static List<Double> getScores(VisualClassification classification) {
+        List<Double> scores = new ArrayList<>();
+        for (ImageClassification c : classification.getImages()) {
+            scores.add(c.getClassifiers().get(0).getClasses().get(0).getScore());
+        }
+        return scores;
+    }
+
+    /**
     * @param scores scores for a test
     * @param threshold
     * @param flag flag to calculate TPR or FPR
     * @return result of a ROC point under this threshold
-    * */
+     */
     public static double calculate(List<Double> scores, double threshold, String flag) throws Exception{
 
         int count = 0;
@@ -51,8 +60,8 @@ public class Calculator {
         return count / scores.size();
     }
 
-    public static List<Double> calculateRates(List<Double> scores, double offset, String flag) throws Exception {
-        List<Double> rates = new ArrayList<>();
+    public static double[] calculateRates(List<Double> scores, String flag, double offset) throws Exception {
+//        List<Double> rates = new ArrayList<>();
         double maxScore = 0;
         for (Double score : scores) {
             maxScore = score > maxScore ? score : maxScore;
@@ -61,9 +70,11 @@ public class Calculator {
         for (Double score : scores) {
             minScore = score < minScore ? score : minScore;
         }
+        int i = 0;
+        double[] rates = new double[(int)((maxScore - minScore) / offset + 10)];
         for (double threshold = minScore; threshold <= maxScore; threshold += offset) {
-            double r = Calculator.calculate(scores, threshold, flag);
-            rates.add(r);
+            double r = calculate(scores, threshold, flag);
+            rates[i++] = r;
         }
         return rates;
     }
