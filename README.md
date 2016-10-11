@@ -18,6 +18,8 @@ This program is to randomly select 80% positive and negative pictures for traini
 
 - The resource structure should be like below (pay attention to `positive` directory's path):
 
+  <pre>
+
   CVProject
 
   |---- resource
@@ -39,6 +41,8 @@ This program is to randomly select 80% positive and negative pictures for traini
   |      |      |      |---- neg1.jpg
 
   |      |      |      |---- ...
+
+  </pre>
 
 - Add necessary dependencies by maven.
 
