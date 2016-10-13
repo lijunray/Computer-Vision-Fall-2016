@@ -26,7 +26,6 @@ public class Handler {
     public static Map<String, List<Double>> handle(String apiKey,
                                                    String positiveDirectoryPath,
                                                    String negativeDirectoryPath,
-                                                   double offset,
                                                    int count,
                                                    String classifierName,
                                                    int testCount,
@@ -46,7 +45,7 @@ public class Handler {
             String name = positiveDirectory.getName();
             List<File> randomPositiveFiles = Selector.select(positiveDirectory, count);
             // zip files
-            File zipFile = new File(positiveDirectory.getPath() + name + ".zip");
+            File zipFile = new File(positiveDirectory.getPath() + ".zip");
             Selector.zip(randomPositiveFiles, "", zipFile);
             positiveZipFiles.add(zipFile);
         }
@@ -73,12 +72,14 @@ public class Handler {
 
         System.out.println("+++++++++++++++++Positive+++++++++++++++++");
         VisualClassification positiveClassification = Tester.classify(positiveTestZipFile, classifier, apiKey);
+        System.out.println("Positive Classification: " + positiveClassification);
 
         System.out.println("Sleep for " + sleepTime / 1000 + "seconds...");
         Thread.sleep(sleepTime);
 
         System.out.println("+++++++++++++++++Negative+++++++++++++++++");
         VisualClassification negativeClassification = Tester.classify(negativeTestZipFile, classifier, apiKey);
+        System.out.println("Negative Classification: " + negativeClassification);
 
         List<Double> positiveScores = Calculator.getScores(positiveClassification);
         List<Double> negativeScores = Calculator.getScores(negativeClassification);
@@ -104,6 +105,9 @@ public class Handler {
         if (classifier == null) {
             return null;
         }
+
+        System.out.println("Classifier id: " + classifier.getId());
+
         List<File> positiveFiles = new ArrayList<>();
         File positiveDirectory = new File(positiveDirectoryPath);
         for (File file : positiveDirectory.listFiles()) {
@@ -120,10 +124,10 @@ public class Handler {
         File positiveTestZipFile = new File(positiveDirectoryPath + "\\positive_test.zip");
         File negativeTestZipFile = new File(negativeDirectoryPath + "\\negative_test.zip");
 
-        System.out.println(positiveTestZipFile.getPath());
-        System.out.println(positiveTestFiles.size());
-        System.out.println(negativeTestZipFile.getPath());
-        System.out.println(negativeTestFiles.size());
+        System.out.println("Positive zip file path: " + positiveTestZipFile.getPath());
+        System.out.println("Positive images count: " + positiveTestFiles.size());
+        System.out.println("Negative zip file path: " + negativeTestZipFile.getPath());
+        System.out.println("Negative images count: " + negativeTestFiles.size());
 
         if (positiveTestZipFile.exists()) {
             positiveTestZipFile.delete();
@@ -137,14 +141,14 @@ public class Handler {
 
         System.out.println("+++++++++++++++++Positive+++++++++++++++++");
         VisualClassification positiveClassification = Tester.classify(positiveTestZipFile, classifier, apiKey);
-        System.out.println(positiveClassification);
+        System.out.println("Positive Classification: " + positiveClassification);
 
         System.out.println("Sleep for " + sleepTime / 1000 + "seconds...");
         Thread.sleep(sleepTime);
 
         System.out.println("+++++++++++++++++Negative+++++++++++++++++");
         VisualClassification negativeClassification = Tester.classify(negativeTestZipFile, classifier, apiKey);
-        System.out.println(negativeClassification);
+        System.out.println("Negative Classification: " + negativeClassification);
 
         List<Double> positiveScores = Calculator.getScores(positiveClassification);
         List<Double> negativeScores = Calculator.getScores(negativeClassification);

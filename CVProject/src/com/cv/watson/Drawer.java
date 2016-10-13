@@ -16,6 +16,9 @@ public class Drawer {
         // define the legend position
         plot.addLegend("SOUTH");
 
+        System.out.println("size of TPR:" + x.length);
+        System.out.println("size of FNR:" + y.length);
+
         // add a line plot to the PlotPanel
         plot.addLinePlot(name, x, y);
 

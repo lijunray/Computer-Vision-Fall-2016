@@ -99,4 +99,17 @@ public class TrainerTest {
         Properties properties = Main.getProperties(info);
         System.out.println(properties.getProperty("COUNT").getClass());
     }
+
+    @Test
+    public void testDrawing() {
+        double[] x = new double[1000];
+        double[] y = new double[1000];
+        int count = 0;
+        for (double i = 0; i <= 1; i += 0.01) {
+            x[count] = i;
+            y[count] = i * 2;
+            count++;
+        }
+        Drawer.draw("plotName", "plotTitle", 600, 600, x, y);
+    }
 }

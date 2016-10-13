@@ -25,10 +25,15 @@ public class Calculator {
 
     public static List<Double> getScores(VisualClassification classification) {
         List<Double> scores = new ArrayList<>();
-        for (ImageClassification c : classification.getImages()) {
-            scores.add(c.getClassifiers().get(0).getClasses().get(0).getScore());
+        try {
+            for (ImageClassification c : classification.getImages()) {
+                scores.add(c.getClassifiers().get(0).getClasses().get(0).getScore());
+            }
+        } catch (IndexOutOfBoundsException e) {
+
+        } finally {
+            return scores;
         }
-        return scores;
     }
 
     /**
@@ -39,7 +44,7 @@ public class Calculator {
      */
     public static double calculate(List<Double> scores, double threshold, String flag) throws Exception{
 
-        int count = 0;
+        double count = 0;
         if (flag == FLAG_TPR) {
             for (Double score : scores) {
                 if (score > threshold) {
@@ -71,9 +76,11 @@ public class Calculator {
             minScore = score < minScore ? score : minScore;
         }
         int i = 0;
-        double[] rates = new double[(int)((maxScore - minScore) / offset + 10)];
-        for (double threshold = minScore; threshold <= maxScore; threshold += offset) {
+//        double[] rates = new double[(int)((maxScore - minScore) / offset + 10)];
+        double[] rates = new double[(int)(1 / offset)];
+        for (double threshold = 0; threshold <= 1; threshold += offset) {
             double r = calculate(scores, threshold, flag);
+//            System.out.println(r);
             rates[i++] = r;
         }
         return rates;
