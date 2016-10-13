@@ -16,6 +16,8 @@ This program is to randomly select 80% positive and negative pictures for traini
 
 - You can also put your images anywhere, but you should add `POSITIVE_DIRECTORY_PATH` and `NEGATIVE_DIRECTORY_PATH` to point to your directory's path.
 
+- There are 2 main methods in `Handle` class: `handle`, which creates a new classifier and test it, and `classify`, which fetches the existing classifiers and choose the first one directly to test it. But both of them use 10 positive images and 10 negative images.
+
 - The resource structure should be like below (pay attention to `positive` directory's path):
 
   <pre>
@@ -44,7 +46,7 @@ This program is to randomly select 80% positive and negative pictures for traini
 
   </pre>
 
-- Add necessary dependencies by maven.
+- Add necessary dependencies by maven. All 3rd party libraries are listed there.
 
 
 
