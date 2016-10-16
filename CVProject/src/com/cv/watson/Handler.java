@@ -138,25 +138,87 @@ public class Handler {
 
         Selector.zip(positiveTestFiles, "", positiveTestZipFile);
         Selector.zip(negativeTestFiles, "", negativeTestZipFile);
-
-        System.out.println("+++++++++++++++++Positive+++++++++++++++++");
-        VisualClassification positiveClassification = Tester.classify(positiveTestZipFile, classifier, apiKey);
-        System.out.println("Positive Classification: " + positiveClassification);
-
-        System.out.println("Sleep for " + sleepTime / 1000 + "seconds...");
-        Thread.sleep(sleepTime);
-
-        System.out.println("+++++++++++++++++Negative+++++++++++++++++");
-        VisualClassification negativeClassification = Tester.classify(negativeTestZipFile, classifier, apiKey);
-        System.out.println("Negative Classification: " + negativeClassification);
-
-        List<Double> positiveScores = Calculator.getScores(positiveClassification);
-        List<Double> negativeScores = Calculator.getScores(negativeClassification);
-
         Map<String, List<Double>> map = new HashMap<>();
 
-        map.put(POSITIVE, positiveScores);
-        map.put(NEGATIVE, negativeScores);
-        return map;
+        try {
+            System.out.println("+++++++++++++++++Positive+++++++++++++++++");
+            VisualClassification positiveClassification = Tester.classify(positiveTestZipFile, classifier, apiKey);
+            System.out.println("Positive Classification: " + positiveClassification);
+
+            System.out.println("Sleep for " + sleepTime / 1000 + "seconds...");
+            Thread.sleep(sleepTime);
+
+            System.out.println("+++++++++++++++++Negative+++++++++++++++++");
+            VisualClassification negativeClassification = Tester.classify(negativeTestZipFile, classifier, apiKey);
+            System.out.println("Negative Classification: " + negativeClassification);
+
+            List<Double> positiveScores = Calculator.getScores(positiveClassification);
+            List<Double> negativeScores = Calculator.getScores(negativeClassification);
+
+
+            map.put(POSITIVE, positiveScores);
+            map.put(NEGATIVE, negativeScores);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            return map;
+        }
+    }
+
+    public static void getCI(String apiKey,
+                             String positiveDirectoryPath,
+                             String negativeDirectoryPath,
+                             int testCount,
+                             long sleepTime,
+                             int CITimes,
+                             double offset,
+                             double CIRate) throws Exception {
+        List<List<Double>> tprCIs = new ArrayList<>(20);
+        List<List<Double>> fprCIs = new ArrayList<>(20);
+        for (int i = 0; i < CITimes; i++) {
+            Map<String, List<Double>> map = Handler.classify(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime);
+            Set<String> keys = map.keySet();
+            for (String key : keys) {
+                System.out.println("---------------" + key + "----------------------");
+                for (Double score : map.get(key)) {
+                    System.out.println(score);
+                }
+            }
+            double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
+            double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
+            System.out.println("scores: {" + "\"positives\": " + map.get(Handler.POSITIVE) + "," + "\"negatives\": " + map.get(Handler.NEGATIVE) + "}");
+
+            for (int j = 0; j < 1 / offset; j++) {
+                tprCIs.get(j).add(tprs[j]);
+            }
+            for (int j = 0; j < 1 / offset; j++) {
+                fprCIs.get(j).add(fprs[j]);
+            }
+            Thread.sleep(sleepTime);
+        }
+        int count = (int) (CITimes * CIRate);
+        int start = (CITimes - count) >> 1;
+        int end = CITimes - start;
+        Map<Double, Double> tprCI = new HashMap<>();
+        Map<Double, Double> fprCI = new HashMap<>();
+        for (List<Double> t : tprCIs) {
+            t.sort((a, b) -> (int) (a - b));
+            tprCI.put(t.get(start), t.get(end));
+        }
+        for (List<Double> f : fprCIs) {
+            f.sort((a, b) -> (int) (a - b));
+            fprCI.put(f.get(start), f.get(end));
+        }
+
+        System.out.printf("CI for TPRs: /n");
+        Set<Double> tprKeys = tprCI.keySet();
+        for (Double tprKey : tprKeys) {
+            System.out.printf("[/d, /d], ", tprKey, tprCI.get(tprKey));
+        }
+        System.out.printf("/nCI for FPRs: /n");
+        Set<Double> fprKeys = fprCI.keySet();
+        for (Double fprKey : fprKeys) {
+            System.out.printf("[/d, /d], ", fprKey, tprCI.get(fprKey));
+        }
     }
 }

@@ -9,7 +9,10 @@ import javax.swing.*;
  */
 public class Drawer {
     public static void draw(String name, String title, int width, int height, double[] x, double[] y) {
-
+        if (x.length == 0 || y.length == 0) {
+            System.out.println("One or both of the data array are empty!");
+            return ;
+        }
         // create your PlotPanel (you can use it as a JPanel)
         Plot2DPanel plot = new Plot2DPanel();
 

@@ -4,7 +4,7 @@
 
 Build a classifier based on <a href="http://www.ibm.com/watson/developercloud/visual-recognition.html">IBM Watson Visual Recognition Service</a>, and test it by classifying both positive and negative images. Given a threshold, divide the scores fetched from server to true or false. By all these data, calculate <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">ROC</a>.
 
-This program is to randomly select 80% positive and negative pictures for training for a classifier, and the rest 20% positive and negative pictures for testing the classifier. Then automatically calculate all scores to get ROC points. 
+This program is to randomly select some amount of positive and negative pictures for training for a classifier, and some amount of positive and negative pictures for testing the classifier. Then automatically calculate all scores to get ROC points, Confidence Intervals, and draw ROC plot. 
 
 ### How to use it
 
@@ -46,8 +46,12 @@ This program is to randomly select 80% positive and negative pictures for traini
 
 - Add necessary dependencies by maven.
 
+- In `Main` class, call `Handler.handle()` to create a new Classifier and test it, and `Handler.classify()` to test the Classifier already existing in your server, both of which return a `Map` with positive and negative scores. With some lines of code below the call, it calculates the TPRs and FPRs to get ROC points and draw the plot.
+
+- In `Main` class, call `Handler.getCI()`, the program will run `CITimes` times to get Confidence Intervals and print the result to the console with a specific format.
+
 
 
 ### TODO
 
-- Get confidence intervals
+- Write all scores and Confidence Intervals into a json file.
