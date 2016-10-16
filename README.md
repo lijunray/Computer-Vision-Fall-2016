@@ -56,8 +56,4 @@ This program is to randomly select some amount of positive and negative pictures
 
 ### TODO
 
-<<<<<<< HEAD
-- Write all scores and Confidence Intervals into a json file.
-=======
 - Get confidence intervals
->>>>>>> 6356f25cfd299dab6ee900163e517c179c8dbc3a
