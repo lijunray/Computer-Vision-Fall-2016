@@ -3,14 +3,15 @@ package com.cv.test;
 import com.cv.Main;
 
 import com.cv.watson.Drawer;
+import com.cv.watson.Persistencer;
 import com.cv.watson.Rotater;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Created by Ray on 2016/10/6.
@@ -110,7 +111,7 @@ public class TrainerTest {
 
     @Test
     public void testRotateAnImage() throws IOException {
-        List<File> rotatedImages = Rotater.rotateAnImage(new File("C:\\Users\\Ray\\Documents\\GitHub\\Computer-Vision-Fall-2016\\CVProject\\resource\\pictures\\positive\\camel.jpg"), "PNG", 10, 20, 30, 40, 50, 60);
+//        List<File> rotatedImages = Rotater.rotateAnImage(new File("C:\\Users\\Ray\\Documents\\GitHub\\Computer-Vision-Fall-2016\\CVProject\\resource\\pictures\\positive\\camel.jpg"), "PNG", 10, 20, 30, 40, 50, 60);
     }
 
     @Test
@@ -118,5 +119,21 @@ public class TrainerTest {
         File dir = new File("C:\\Users\\Ray\\Documents\\GitHub\\Computer-Vision-Fall-2016\\CVProject\\resource\\pictures\\positive\\test");
         List<File> files = Arrays.asList(dir.listFiles());
         Rotater.rotateImages(files, "png", 10, 20, 30, 40);
+    }
+
+    @Test
+    public void testGson() throws IOException {
+        Map<String, List<Double>> scores = new HashMap<>();
+        List<Double> scores1 = new ArrayList<>();
+        List<Double> scores5 = new ArrayList<>();
+
+        scores1.add(0.1);
+        scores5.add(0.5);
+        scores5.add(4.1);
+
+        scores.put("positive", scores1);
+        scores.put("negative", scores5);
+
+        Persistencer.write(scores, "test.json");
     }
 }

@@ -22,8 +22,17 @@ public class Rotater {
      */
     public static List<File> rotateImages(List<File> files, String format, int... angles) throws IOException {
         List<File> rotatedImageFiles = new ArrayList<>();
+        if (files.isEmpty()) {
+            return rotatedImageFiles;
+        }
+        File parent = files.get(0).getParentFile();
+        File directory = new File(String.format("%s\\%s_rotated", parent.getPath(), parent.getName()));
+        if (directory.exists()) {
+            directory.delete();
+        }
+        directory.mkdir();
         for (File file : files) {
-            List<File> temp = rotateAnImage(file, format, angles);
+            List<File> temp = rotateAnImage(directory, file, format, angles);
             rotatedImageFiles.addAll(temp);
         }
         return rotatedImageFiles;
@@ -36,7 +45,7 @@ public class Rotater {
      * @param angles angles to rotate
      * @return rotated image files
      */
-    public static List<File> rotateAnImage(File file, String format, int... angles) throws IOException {
+    public static List<File> rotateAnImage(File directory, File file, String format, int... angles) throws IOException {
         System.out.printf("%s%n", file.getPath());
 
         Image image = ImageIO.read(file);
@@ -56,13 +65,15 @@ public class Rotater {
                     (rect_des.height - src_height) / 2);
             g2.rotate(Math.toRadians(angle), src_width / 2, src_height / 2);
 
-            g2.drawImage(image, 0, 0, null);
+            g2.drawImage(image, null, null);
 
             String name = file.getName().split(".jpg")[0];
 
-            File rotatedImageFile = new File(String.format("%s\\%s_%d.%s", file.getParent(), name, angle, format));
+            File rotatedImageFile = new File(String.format("%s\\%s_%d.%s", directory.getPath(), name, angle, format));
 
-            System.out.printf("Writing to %s%n", rotatedImageFile.getPath());
+//            System.out.printf("Writing to %s%n", rotatedImageFile.getPath());
+            ImageIO.write(rotatedImage, format, rotatedImageFile);
+
             rotatedImages.add(rotatedImageFile);
         }
         return rotatedImages;

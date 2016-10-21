@@ -59,6 +59,9 @@ public class Selector {
      */
     public static Set<Integer> getRandomSet(int bound, int size) {
         Set<Integer> randomSet = new HashSet<>();
+        if (bound <= 0) {
+            return randomSet;
+        }
         while (randomSet.size() < size) {
             int randomNumber = new Random().nextInt(bound);
             randomSet.add(randomNumber);

@@ -3,6 +3,7 @@ package com.cv;
 import com.cv.watson.Calculator;
 import com.cv.watson.Drawer;
 import com.cv.watson.Handler;
+import com.cv.watson.Persistencer;
 
 import java.io.*;
 import java.util.*;
@@ -24,10 +25,15 @@ public class Main {
         long sleepTime = Long.valueOf(properties.getProperty("SLEEP_TIME"));
         String format = properties.getProperty("FORMAT");
 
-        String[] anglesString = properties.getProperty("ANGLES").split(" ");
-        int[] angles = new int[anglesString.length];
-        for (int i = 0; i < angles.length; i++) {
-            angles[i] = Integer.valueOf(anglesString[i]);
+//        String[] anglesString = properties.getProperty("ANGLES").split(" ");
+//        int[] angles = new int[anglesString.length];
+//        for (int i = 0; i < angles.length; i++) {
+//            angles[i] = Integer.valueOf(anglesString[i]);
+//        }
+
+        int[] angles = new int[10];
+        for (int i = 0; i < 10; i++) {
+            angles[i] = (i + 1) * 18;
         }
 
         int CITimes = 50;
@@ -50,19 +56,23 @@ public class Main {
         }
         try {
 //            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime);
-////            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, testCount, sleepTime);
-//            Set<String> keys = map.keySet();
-//            for (String key : keys) {
-//                System.out.println("---------------" + key + "----------------------");
-//                for (Double score : map.get(key)) {
-//                    System.out.println(score);
-//                }
-//            }
+//            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, testCount, sleepTime);
+            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, testCount, sleepTime, format, angles);
+            Set<String> keys = map.keySet();
+            for (String key : keys) {
+                System.out.println("---------------" + key + "----------------------");
+                for (Double score : map.get(key)) {
+                    System.out.println(score);
+                }
+            }
 //            double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
 //            double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
-//            System.out.println("scores: {" + "\"positives\": " + map.get(Handler.POSITIVE) + "," + "\"negatives\": " + map.get(Handler.NEGATIVE) + "}");
+            System.out.println("scores: {" + "\"positives\": " + map.get(Handler.POSITIVE) + "," + "\"negatives\": " + map.get(Handler.NEGATIVE) + "}");
+            String fileName = String.format("%d/%d.json", Calendar.MONTH, Calendar.DAY_OF_MONTH);
+            System.out.printf("Writing to file %s...%n", fileName);
+            Persistencer.write(map, fileName);
 //            Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
-            Handler.getCI(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime, CITimes, offset, CIRate);
+//            Handler.getCI(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime, CITimes, offset, CIRate);
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -157,7 +157,7 @@ public class Handler {
         List<File> positiveZipFiles = new ArrayList<>();
 
         for (File positiveDirectory : positiveDirectories) {
-            if (!positiveDirectory.isDirectory()) {
+            if (!positiveDirectory.isDirectory() || positiveDirectory.listFiles().length == 0) {
                 continue;
             }
             positiveFiles.addAll(Arrays.asList(positiveDirectory.listFiles()));
@@ -176,8 +176,8 @@ public class Handler {
 
         VisualClassifier classifier = Trainer.createClassifier(Trainer.createClassifierOptions(positiveZipFiles, negativeZipFile, classifierName), apiKey);
 
-        List<File> positiveTestFiles = Selector.selectTestFiles(positiveFiles, testCount);
-        List<File> negativeTestFiles = Selector.selectTestFiles(negativeFiles, testCount);
+        List<File> positiveTestFiles = Rotater.rotateImages(Selector.selectTestFiles(positiveFiles, testCount), format, angles);
+        List<File> negativeTestFiles = Rotater.rotateImages(Selector.selectTestFiles(negativeFiles, testCount), format, angles);
 
         return handleClassify(apiKey,
                 positiveDirectoryPath,
