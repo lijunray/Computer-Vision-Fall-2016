@@ -22,6 +22,13 @@ public class Main {
         String plotTitle = properties.getProperty("PLOT_TITLE");
         String plotName = properties.getProperty("PLOT_NAME");
         long sleepTime = Long.valueOf(properties.getProperty("SLEEP_TIME"));
+        String format = properties.getProperty("FORMAT");
+
+        String[] anglesString = properties.getProperty("ANGLES").split(" ");
+        int[] angles = new int[anglesString.length];
+        for (int i = 0; i < angles.length; i++) {
+            angles[i] = Integer.valueOf(anglesString[i]);
+        }
 
         int CITimes = 50;
         double CIRate = 0.8;
