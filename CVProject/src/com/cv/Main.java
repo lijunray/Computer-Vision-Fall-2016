@@ -42,20 +42,20 @@ public class Main {
             positiveDirectoryPath = properties.getProperty("NEGATIVE_DIRECTORY_PATH");
         }
         try {
-            Map<String, List<Double>> map = Handler.classify(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime);
-//            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, testCount, sleepTime);
-            Set<String> keys = map.keySet();
-            for (String key : keys) {
-                System.out.println("---------------" + key + "----------------------");
-                for (Double score : map.get(key)) {
-                    System.out.println(score);
-                }
-            }
-            double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
-            double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
-            System.out.println("scores: {" + "\"positives\": " + map.get(Handler.POSITIVE) + "," + "\"negatives\": " + map.get(Handler.NEGATIVE) + "}");
-            Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
-//        Handler.getCI(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime, CITimes, offset, CIRate);
+//            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime);
+////            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, testCount, sleepTime);
+//            Set<String> keys = map.keySet();
+//            for (String key : keys) {
+//                System.out.println("---------------" + key + "----------------------");
+//                for (Double score : map.get(key)) {
+//                    System.out.println(score);
+//                }
+//            }
+//            double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
+//            double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
+//            System.out.println("scores: {" + "\"positives\": " + map.get(Handler.POSITIVE) + "," + "\"negatives\": " + map.get(Handler.NEGATIVE) + "}");
+//            Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
+            Handler.getCI(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime, CITimes, offset, CIRate);
         } catch (Exception e) {
             e.printStackTrace();
         }

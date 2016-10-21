@@ -14,18 +14,6 @@ import java.util.zip.ZipOutputStream;
  */
 public class Selector {
     private static final byte[] buffer = new byte[2048];
-    public static final String NEGATIVE_PATH = "\\negative.zip";
-    public static final String TRAIN = "_train";
-    public static final String TEST = "_test";
-    private final File positiveDirectory;
-    private final File negativeDirectory;
-    private final int testCount;
-
-    public Selector(String positiveDirectoryPath, String negativeDirectoryPath, int testCount) {
-        this.positiveDirectory = new File(positiveDirectoryPath);
-        this.negativeDirectory = new File(negativeDirectoryPath);
-        this.testCount = testCount;
-    }
 
     /**
      * Select count files from directory randomly
@@ -64,11 +52,11 @@ public class Selector {
         return testFiles;
     }
 
-    /*
-        * @param bound bound of random numbers
-        * @param size count of random numbers
-        * @return a set including all generated random numbers
-        * */
+    /**
+     * @param bound bound of random numbers
+     * @param size count of random numbers
+     * @return a set including all generated random numbers
+     */
     public static Set<Integer> getRandomSet(int bound, int size) {
         Set<Integer> randomSet = new HashSet<>();
         while (randomSet.size() < size) {
@@ -78,11 +66,11 @@ public class Selector {
         return randomSet;
     }
 
-    /*
-    * @param files files to be zipped
-    * @param baseFolder base folder
-    * @param out file to be written into
-    * */
+    /**
+     * @param files files to be zipped
+     * @param baseFolder base folder
+     * @param out file to be written into
+     */
     public static void zip(List<File> files, String baseFolder, File out) throws Exception {
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(out));
         FileInputStream fis;

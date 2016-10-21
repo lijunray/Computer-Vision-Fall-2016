@@ -58,6 +58,13 @@ public class Calculator {
         return count / scores.size();
     }
 
+    /**
+     *
+     * @param scores
+     * @param offset
+     * @return
+     * @throws Exception
+     */
     public static double[] calculateRates(List<Double> scores, double offset) throws Exception {
         if (scores.isEmpty()) {
             return new double[0];

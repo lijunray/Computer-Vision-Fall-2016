@@ -2,19 +2,15 @@ package com.cv.test;
 
 import com.cv.Main;
 
-import com.cv.watson.Calculator;
 import com.cv.watson.Drawer;
-import com.cv.watson.Handler;
-import com.ibm.watson.developer_cloud.visual_recognition.v3.VisualRecognition;
-import com.ibm.watson.developer_cloud.visual_recognition.v3.model.VisualClassifier;
+import com.cv.watson.Rotater;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * Created by Ray on 2016/10/6.
@@ -69,7 +65,6 @@ public class TrainerTest {
     public void testClassifier() throws Exception {
         String positiveDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\positive";
         String negativeDirectoryPath = System.getProperty("user.dir") + "\\resource\\pictures\\negative";
-//        Map<String, List<Double>> map = Handler.classify(Main.API_KEY, positiveDirectoryPath, negativeDirectoryPath, Main.TEST_COUNT, Main.SLEEP_TIME);
 //        System.out.println(map);
 //        Set<String> keys = map.keySet();
 //        System.out.println("scores:");
@@ -111,5 +106,17 @@ public class TrainerTest {
             count++;
         }
         Drawer.draw("plotName", "plotTitle", 600, 600, x, y);
+    }
+
+    @Test
+    public void testRotateAnImage() throws IOException {
+        List<File> rotatedImages = Rotater.rotateAnImage(new File("C:\\Users\\Ray\\Documents\\GitHub\\Computer-Vision-Fall-2016\\CVProject\\resource\\pictures\\positive\\camel.jpg"), "PNG", 10, 20, 30, 40, 50, 60);
+    }
+
+    @Test
+    public void testRotateImages() throws IOException {
+        File dir = new File("C:\\Users\\Ray\\Documents\\GitHub\\Computer-Vision-Fall-2016\\CVProject\\resource\\pictures\\positive\\test");
+        List<File> files = Arrays.asList(dir.listFiles());
+        Rotater.rotateImages(files, "png", 10, 20, 30, 40);
     }
 }
