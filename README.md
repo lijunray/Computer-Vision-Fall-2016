@@ -16,7 +16,13 @@ This program is to randomly select some amount of positive and negative pictures
 
 - You can also put your images anywhere, but you should add `POSITIVE_DIRECTORY_PATH` and `NEGATIVE_DIRECTORY_PATH` to point to your directory's path.
 
-- There are 2 main methods in `Handler` class: `handle`, which creates a new classifier and test it, and `classify`, which fetches the existing classifiers and choose the first one directly to test it. But both of them use 10 positive images and 10 negative images.
+- There are 4 main methods in `Handler` class, two of which are to create a new classifier, another two are to classify images. 
+
+- For the 2 training methods, one of them creates a new classifier by selecting random positive and negative images, while another creates a new classifier with rotated images generated from previous training. 
+
+- For the 2 classifying methods, one of them selects randomly some images as testing images and test the classifier on the server. Another classifies images in a directory directly,
+
+- Since there is a limit of images count in any zip file, 20, if the number of images is more than 20, the methods will automatically split those files into several zip files and test them one by one.
 
 - The resource structure should be like below (pay attention to `positive` directory's path):
 
@@ -44,16 +50,13 @@ This program is to randomly select some amount of positive and negative pictures
 
   |      |      |      |---- ...
 
+  |      |---- scores(save scores as json format)
+
   </pre>
 
 - Add necessary dependencies by maven. All 3rd party libraries are listed there.
 
-- In `Main` class, call `Handler.handle()` to create a new Classifier and test it, and `Handler.classify()` to test the Classifier already existing in your server, both of which return a `Map` with positive and negative scores. With some lines of code below the call, it calculates the TPRs and FPRs to get ROC points and draw the plot.
+- In `Main` class, there are 4 handle methods, all of which are commented. Read the comments and choose one to run. Classifying methods return a `Map` with positive and negative scores. With some lines of code below the call, it calculates the TPRs and FPRs to get ROC points and draw the plot. There are also 2 methods in `Drawer`, one of which is to draw a single line, another is to draw 2 lines, one normal, and another's classifier is trained with rotated images.
 
 - In `Main` class, call `Handler.getCI()`, the program will run `CITimes` times to get Confidence Intervals and print the result to the console with a specific format.
 
-
-
-### TODO
-
-- Get confidence intervals

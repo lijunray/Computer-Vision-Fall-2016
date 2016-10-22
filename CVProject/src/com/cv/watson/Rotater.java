@@ -5,6 +5,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,36 +19,35 @@ public class Rotater {
      * Rotate a set of images for different angles and save them as a List of file
      * @param files original image files
      * @param format rotated images' format
+     * @param directory directory for copied rotated files to be saved into
      * @param angles angles to rotate
      * @return rotated image files
      */
-    public static List<File> rotateImages(List<File> files, String format, int... angles) throws IOException {
+    public static List<File> rotateImages(List<File> files, String format, File directory, int... angles) throws IOException {
+        System.out.printf("Rotating images into %s%n...", directory.getPath());
         List<File> rotatedImageFiles = new ArrayList<>();
         if (files.isEmpty()) {
             return rotatedImageFiles;
         }
-        File parent = files.get(0).getParentFile();
-        File directory = new File(String.format("%s\\%s_rotated", parent.getPath(), parent.getName()));
-        if (directory.exists()) {
-            directory.delete();
-        }
-        directory.mkdir();
         for (File file : files) {
+            File copiedFile = new File(String.format("%s\\%s.png", directory.getPath(), file.getName()));
+            Files.copy(file.toPath(), copiedFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             List<File> temp = rotateAnImage(directory, file, format, angles);
             rotatedImageFiles.addAll(temp);
         }
+        System.out.printf("Rotation finished. Generated %d rotated images.%n", rotatedImageFiles.size());
         return rotatedImageFiles;
     }
 
     /**
      * Rotate an image for different angles and save them as a List of file
+     * @param directory directory to save rotated images
      * @param file original image file
      * @param format rotated images' format
      * @param angles angles to rotate
      * @return rotated image files
      */
     public static List<File> rotateAnImage(File directory, File file, String format, int... angles) throws IOException {
-        System.out.printf("%s%n", file.getPath());
 
         Image image = ImageIO.read(file);
         int src_width = image.getWidth(null);

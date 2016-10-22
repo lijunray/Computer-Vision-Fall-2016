@@ -118,7 +118,7 @@ public class TrainerTest {
     public void testRotateImages() throws IOException {
         File dir = new File("C:\\Users\\Ray\\Documents\\GitHub\\Computer-Vision-Fall-2016\\CVProject\\resource\\pictures\\positive\\test");
         List<File> files = Arrays.asList(dir.listFiles());
-        Rotater.rotateImages(files, "png", 10, 20, 30, 40);
+//        Rotater.rotateImages(files, "png", 10, 20, 30, 40);
     }
 
     @Test
@@ -135,5 +135,10 @@ public class TrainerTest {
         scores.put("negative", scores5);
 
         Persistencer.write(scores, "test.json");
+    }
+
+    @Test
+    public void testDraw() {
+
     }
 }

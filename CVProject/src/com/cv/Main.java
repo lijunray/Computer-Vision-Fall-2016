@@ -6,18 +6,21 @@ import com.cv.watson.Handler;
 import com.cv.watson.Persistencer;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
         File info = new File(System.getProperty("user.dir") + "\\info.properties");
         Properties properties = getProperties(info);
         String apiKey = properties.getProperty("API_KEY");
         double offset = Double.valueOf(properties.getProperty("OFFSET"));
         int count = Integer.valueOf(properties.getProperty("COUNT"));
         String classifierName = properties.getProperty("CLASSIFIER_NAME");
-        int testCount = Integer.valueOf(properties.getProperty("TEST_COUNT"));
+        int positiveTestCount = Integer.valueOf(properties.getProperty("POSITIVE_TEST_COUNT"));
+        int negativeTestCount = Integer.valueOf(properties.getProperty("NEGATIVE_TEST_COUNT"));
         int plotWidth = Integer.valueOf(properties.getProperty("PLOT_WIDTH"));
         int plotHeight = Integer.valueOf(properties.getProperty("PLOT_HEIGHT"));
         String plotTitle = properties.getProperty("PLOT_TITLE");
@@ -54,25 +57,40 @@ public class Main {
         if (properties.containsKey("NEGATIVE_DIRECTORY_PATH")) {
             positiveDirectoryPath = properties.getProperty("NEGATIVE_DIRECTORY_PATH");
         }
+        getScores(apiKey, sleepTime, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, positiveTestCount, negativeTestCount, format, plotName, plotTitle, plotWidth, plotHeight, offset, angles);
+    }
+
+    private static void getScores(String apiKey, long sleepTime, String positiveDirectoryPath,
+                                  String negativeDirectoryPath, int count, String classifierName,
+                                  int positiveTestCount, int negativeTestCount, String format, String plotName,
+                                  String plotTitle, int plotWidth, int plotHeight, double offset, int... angles) {
         try {
-//            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime);
-//            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, testCount, sleepTime);
-            Map<String, List<Double>> map = Handler.handle(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName, testCount, sleepTime, format, angles);
-            Set<String> keys = map.keySet();
-            for (String key : keys) {
-                System.out.println("---------------" + key + "----------------------");
-                for (Double score : map.get(key)) {
-                    System.out.println(score);
-                }
+            // Train normal classifier
+//            Handler.trainNormal(apiKey, positiveDirectoryPath, negativeDirectoryPath, count,
+//                    classifierName, positiveTestCount, negativeTestCount);
+            // Train rotated classifier
+//            Handler.trainRotated(apiKey, positiveDirectoryPath, negativeDirectoryPath, classifierName, format, angles);
+            // Select random images and classify
+            Map<String, List<Double>> map = Handler.classifyRandomImages(apiKey, positiveDirectoryPath,
+                    negativeDirectoryPath, sleepTime, positiveTestCount, negativeTestCount);
+            // Classify selected images in a directory
+//            Map<String, List<Double>> map = Handler.classifyRotated(apiKey, positiveDirectoryPath, negativeDirectoryPath, sleepTime);
+
+            double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
+            double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
+
+            if (map.get(Handler.POSITIVE).isEmpty() || map.get(Handler.NEGATIVE).isEmpty()) {
+                System.out.printf("Not enough scores! Writing failed.");
             }
-//            double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
-//            double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
-            System.out.println("scores: {" + "\"positives\": " + map.get(Handler.POSITIVE) + "," + "\"negatives\": " + map.get(Handler.NEGATIVE) + "}");
-            String fileName = String.format("%d/%d.json", Calendar.MONTH, Calendar.DAY_OF_MONTH);
-            System.out.printf("Writing to file %s...%n", fileName);
-            Persistencer.write(map, fileName);
-//            Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
+            else {
+                DateFormat df = new SimpleDateFormat("dd-MM-HH-mm");
+                Date date = new Date();
+                String fileName = String.format("%s.json", df.format(date));
+                System.out.printf("Writing to file %s...%n", fileName);
+                Persistencer.write(map, fileName);
+                Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
 //            Handler.getCI(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime, CITimes, offset, CIRate);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

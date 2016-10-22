@@ -3,8 +3,12 @@ package com.cv.watson;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -17,14 +21,16 @@ public class Selector {
 
     /**
      * Select count files from directory randomly
-     * @param directory to be selected from
+     * @param files a list of files to be selected from
      * @param count number of files
      * @return a list of files selected randomly
      */
-    public static List<File> select(File directory, int count) {
-        System.out.println(directory.getPath());
+    public static List<File> select(List<File> files, int count) {
+        if (files.isEmpty()) {
+            return null;
+        }
+        System.out.println(files.get(0).getParentFile().getPath());
 
-        List<File> files = Arrays.asList(directory.listFiles());
         List<File> trainFiles = new ArrayList<>();
 
         int bound = files.size();
@@ -32,11 +38,48 @@ public class Selector {
 
         for (int i = 0; i < bound; i++) {
             if (randomNumbers.contains(i)) {
-                trainFiles.add(files.get(i));
+                String fileName = files.get(i).getName();
+                if (isImage(fileName)) {
+                    trainFiles.add(files.get(i));
+                }
             }
         }
 
         return trainFiles;
+    }
+
+    public static List<File> selectFiles(List<File> files, int count, File directory) {
+        if (files.isEmpty()) {
+            return null;
+        }
+        System.out.println(files.get(0).getParentFile().getPath());
+
+        List<File> trainFiles = new ArrayList<>();
+
+        int bound = files.size();
+        Set<Integer> randomNumbers = getRandomSet(bound, count);
+
+        for (int i = 0; i < bound; i++) {
+            if (randomNumbers.contains(i)) {
+                String fileName = files.get(i).getName();
+                if (isImage(fileName)) {
+                    trainFiles.add(files.get(i));
+                }
+            }
+        }
+
+        List<File> newFiles = new ArrayList<>();
+        int inc = 1;
+        for (File file : trainFiles) {
+            File newFile = new File(String.format("%s\\%d.jpg", directory.getPath(), inc++));
+            try {
+                Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                newFiles.add(newFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return newFiles;
     }
 
     public static List<File> selectTestFiles(List<File> files, int count) {
@@ -74,12 +117,13 @@ public class Selector {
      * @param baseFolder base folder
      * @param out file to be written into
      */
-    public static void zip(List<File> files, String baseFolder, File out) throws Exception {
+    public static void zip(List<File> files, int begin, int end, String baseFolder, File out) throws IOException {
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(out));
         FileInputStream fis;
         ZipEntry entry;
         int count;
-        for (File file : files) {
+        for (int i = begin; i <= end; i++) {
+            File file = files.get(i);
             if (file.isDirectory() || file.getPath().endsWith(".zip")) {
                 continue;
             }
@@ -90,5 +134,11 @@ public class Selector {
                 zos.write(buffer, 0, count);
         }
         zos.close();
+    }
+
+    private static boolean isImage(String fileName) {
+        return fileName.endsWith(".jpg") || fileName.endsWith(".JPG") || fileName.endsWith(".PNG")
+                || fileName.endsWith(".png") || fileName.endsWith(".jpeg") || fileName.endsWith("JPEG")
+                || fileName.endsWith(".gif") || fileName.endsWith(".GIF");
     }
 }
