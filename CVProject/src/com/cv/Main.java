@@ -4,6 +4,7 @@ import com.cv.watson.Calculator;
 import com.cv.watson.Drawer;
 import com.cv.watson.Handler;
 import com.cv.watson.Persistencer;
+import com.google.gson.Gson;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -65,35 +66,59 @@ public class Main {
                                   int positiveTestCount, int negativeTestCount, String format, String plotName,
                                   String plotTitle, int plotWidth, int plotHeight, double offset, int... angles) {
         try {
-            // Train normal classifier
-//            Handler.trainNormal(apiKey, positiveDirectoryPath, negativeDirectoryPath, count,
-//                    classifierName, positiveTestCount, negativeTestCount);
-            // Train rotated classifier
-//            Handler.trainRotated(apiKey, positiveDirectoryPath, negativeDirectoryPath, classifierName, format, angles);
+//             Train normal classifier
+//            Handler.trainNormal(apiKey, positiveDirectoryPath, negativeDirectoryPath, count, classifierName);
             // Select random images and classify
-            Map<String, List<Double>> map = Handler.classifyRandomImages(apiKey, positiveDirectoryPath,
-                    negativeDirectoryPath, sleepTime, positiveTestCount, negativeTestCount);
+//            Map<String, List<Double>> map = Handler.classifyRandomImages(apiKey, positiveDirectoryPath,
+//                    negativeDirectoryPath, sleepTime, positiveTestCount, negativeTestCount);
+//             Train rotated classifier
+//            Handler.trainRotated(apiKey, positiveDirectoryPath, negativeDirectoryPath, classifierName, format, angles);
             // Classify selected images in a directory
 //            Map<String, List<Double>> map = Handler.classifyRotated(apiKey, positiveDirectoryPath, negativeDirectoryPath, sleepTime);
 
-            double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
-            double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
+            Map<String, List<Double>> map = Persistencer.read("22-10-20-30.json", "22-10-20-41.json");
 
-            if (map.get(Handler.POSITIVE).isEmpty() || map.get(Handler.NEGATIVE).isEmpty()) {
-                System.out.printf("Not enough scores! Writing failed.");
-            }
-            else {
-                DateFormat df = new SimpleDateFormat("dd-MM-HH-mm");
-                Date date = new Date();
-                String fileName = String.format("%s.json", df.format(date));
-                System.out.printf("Writing to file %s...%n", fileName);
-                Persistencer.write(map, fileName);
-                Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
+            drawTwoLines(map, offset, plotName, plotTitle, plotWidth, plotHeight);
+            drawOneLine(map, offset, plotName, plotTitle, plotWidth, plotHeight);
 //            Handler.getCI(apiKey, positiveDirectoryPath, negativeDirectoryPath, testCount, sleepTime, CITimes, offset, CIRate);
-            }
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void drawOneLine(Map<String, List<Double>> map, double offset, String plotName,
+                                    String plotTitle, int plotWidth, int plotHeight) throws Exception {
+        double[] tprs = Calculator.calculateRates(map.get(Handler.POSITIVE), offset);
+        double[] fprs = Calculator.calculateRates(map.get(Handler.NEGATIVE), offset);
+
+        if (map.get(Handler.POSITIVE).isEmpty() || map.get(Handler.NEGATIVE).isEmpty()) {
+            System.out.printf("Not enough scores! Writing failed.%n");
+            System.out.printf("Scores: %n%s%n", map);
+        }
+        else {
+            DateFormat df = new SimpleDateFormat("dd-MM-HH-mm");
+            Date date = new Date();
+            String fileName = String.format("%s.json", df.format(date));
+            System.out.printf("Writing to file %s...%n", fileName);
+            Persistencer.write(map, fileName);
+            Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
+        }
+
+        Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprs, tprs);
+
+    }
+
+    public static void drawTwoLines(Map<String, List<Double>> map, double offset, String plotName,
+                                    String plotTitle, int plotWidth, int plotHeight) throws Exception {
+        double[] tprNormal = Calculator.calculateRates(map.get(Persistencer.POSITIVE_NORMAL), offset);
+        double[] fprNormal = Calculator.calculateRates(map.get(Persistencer.NEGATIVE_NORMAL), offset);
+        double[] tprRotated = Calculator.calculateRates(map.get(Persistencer.POSITIVE_ROTATED), offset);
+        double[] fprRotated = Calculator.calculateRates(map.get(Persistencer.NEGATIVE_ROTATED), offset);
+
+        Drawer.draw(plotName, plotTitle, plotWidth, plotHeight, fprNormal, tprNormal, fprRotated, tprRotated);
+
     }
 
     public static Properties getProperties(File info) throws IOException {

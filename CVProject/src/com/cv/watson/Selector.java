@@ -136,7 +136,7 @@ public class Selector {
         zos.close();
     }
 
-    private static boolean isImage(String fileName) {
+    public static boolean isImage(String fileName) {
         return fileName.endsWith(".jpg") || fileName.endsWith(".JPG") || fileName.endsWith(".PNG")
                 || fileName.endsWith(".png") || fileName.endsWith(".jpeg") || fileName.endsWith("JPEG")
                 || fileName.endsWith(".gif") || fileName.endsWith(".GIF");

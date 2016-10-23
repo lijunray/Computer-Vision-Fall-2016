@@ -30,13 +30,11 @@ public class Handler {
      * @param negativeDirectoryPath negative images directory
      * @param count count of training images
      * @param classifierName classifier name
-     * @param positiveTestCount number of positive testing images
-     * @param negativeTestCount number of negative testing images
      * @return a map containing both positive and negative scores
      * @throws Exception
      */
     public static void trainNormal(String apiKey, String positiveDirectoryPath, String negativeDirectoryPath,
-                                   int count, String classifierName, int positiveTestCount, int negativeTestCount) throws Exception {
+                                   int count, String classifierName) throws Exception {
         List<File> positiveDirectories = Arrays.asList(new File(positiveDirectoryPath).listFiles());
         List<File> positiveFiles = new ArrayList<>();
         File negativeDirectory = new File(negativeDirectoryPath);
@@ -48,16 +46,10 @@ public class Handler {
                 continue;
             }
             // remove directories and add them to positive files list
-            positiveFiles.addAll(
-                    Arrays.asList(positiveDirectory.listFiles())
-                            .stream()
-                            .filter(file -> !file.isDirectory())
-                            .collect(Collectors.toList())
-            );
-            List<File> randomPositiveFiles = copyToDirectory(Selector.select(Arrays.asList(positiveDirectory.listFiles()), count));
-            File trainDirectory = new File(String.format("%s\\%_train", positiveDirectory.getPath(), positiveDirectory.getName()));
-            deleteDirectory(trainDirectory);
-            copyToDirectory(randomPositiveFiles);
+            positiveFiles.addAll(Arrays.asList(positiveDirectory.listFiles()).stream()
+                            .filter(file -> Selector.isImage(file.getName())).collect(Collectors.toList()));
+            List<File> randomPositiveFiles = copyToDirectory(Selector.select(Arrays.asList(positiveDirectory.listFiles())
+                    .stream().filter(file -> Selector.isImage(file.getName())).collect(Collectors.toList()), count));
             // zip files
             File zipFile = new File(positiveDirectory.getPath() + ".zip");
             Selector.zip(randomPositiveFiles, 0, randomPositiveFiles.size() - 1, "", zipFile);
@@ -103,7 +95,8 @@ public class Handler {
         List<File> positiveZipFiles = new ArrayList<>();
 
         for (File positiveDirectory : positiveDirectories) {
-            if (!positiveDirectory.isDirectory() || positiveDirectory.listFiles().length == 0) {
+            if (!positiveDirectory.isDirectory() || positiveDirectory.listFiles().length == 0
+                    || positiveDirectory.getName().equals("positive_test")) {
                 continue;
             }
             File randomPositiveDirectory = new File(String.format("%s\\%s_train", positiveDirectory.getPath(),
@@ -237,7 +230,7 @@ public class Handler {
         }
         for (int i = 0; i < CITimes; i++) {
             Handler.trainNormal(apiKey, positiveDirectoryPath, negativeDirectoryPath,
-                    count, classifierName, positiveTestCount, negativeTestCount);
+                    count, classifierName);
             Map<String, List<Double>> map = Handler.classifyRandomImages(apiKey, positiveDirectoryPath,
                     negativeDirectoryPath, sleepTime, positiveTestCount, negativeTestCount);
             Set<String> keys = map.keySet();
@@ -353,8 +346,9 @@ public class Handler {
         System.out.printf("+++++++++++++++++%s+++++++++++++++++%n", type);
         VisualClassification classification = Tester.classify(testZipFile, classifier, apiKey);
 //        System.out.printf("%s classification: %n%s%n", type, classification);
-
-        return Calculator.getScores(classification);
+        List<Double> scores = Calculator.getScores(classification);
+        System.out.printf("scores: %s%n", scores);
+        return scores;
     }
 
     private static List<File> copyToDirectory(List<File> randomFiles) throws IOException {
@@ -362,9 +356,10 @@ public class Handler {
         File parent = randomFiles.get(0).getParentFile();
         File directory = new File(String.format("%s\\%s_train", parent.getPath(), parent.getName()));
         deleteDirectory(directory);
+        int name = 1;
         for (File file : randomFiles) {
-            File newFile = new File(String.format("%s\\%s", directory.getPath(), file.getName()));
-            System.out.printf("Copying %s to %s...%n", file.getName(), newFile.getPath());
+            File newFile = new File(String.format("%s\\%d.jpg", directory.getPath(), name++));
+            System.out.printf("Copying %s to %s...%n", file.getPath(), newFile.getPath());
             Files.copy(file.toPath(), newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             newFiles.add(newFile);
         }
