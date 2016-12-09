@@ -851,7 +851,7 @@
       <workItem from="1476984315038" duration="10535000" />
       <workItem from="1477009657031" duration="7945000" />
       <workItem from="1477020540062" duration="42904000" />
-      <workItem from="1481244844590" duration="1530000" />
+      <workItem from="1481244844590" duration="1621000" />
     </task>
     <task id="LOCAL-00001" summary="Added rotation related methods">
       <created>1477019032514</created>
@@ -937,11 +937,18 @@
       <option name="project" value="LOCAL" />
       <updated>1481246679341</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="Fixed bugs and refactored some methods">
+      <created>1481246739392</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1481246739392</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="164091000" />
+    <option name="totallyTimeSpent" value="164182000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
