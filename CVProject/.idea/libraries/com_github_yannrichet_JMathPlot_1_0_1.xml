@@ -6,6 +6,10 @@
       <root url="jar://$MAVEN_REPOSITORY$/com/github/yannrichet/JMathIO/1.0/JMathIO-1.0.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/com/github/yannrichet/JMathArray/1.0/JMathArray-1.0.jar!/" />
       <root url="jar://$MAVEN_REPOSITORY$/gov/nist/math/jama/1.0.3/jama-1.0.3.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/yannrichet/JMathPlot/1.0.1/JMathPlot-1.0.1.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/yannrichet/JMathIO/1.0/JMathIO-1.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/yannrichet/JMathArray/1.0/JMathArray-1.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/gov/nist/math/jama/1.0.3/jama-1.0.3.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />
