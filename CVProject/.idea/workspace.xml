@@ -338,7 +338,7 @@
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.15136719" />
     <property name="project.structure.side.proportion" value="0.2" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="settings.github" />
     <property name="dynamic.classpath" value="false" />
     <property name="FullScreen" value="false" />
     <property name="extract.method.default.visibility" value="private" />
@@ -851,7 +851,7 @@
       <workItem from="1476984315038" duration="10535000" />
       <workItem from="1477009657031" duration="7945000" />
       <workItem from="1477020540062" duration="42904000" />
-      <workItem from="1481244844590" duration="1469000" />
+      <workItem from="1481244844590" duration="1530000" />
     </task>
     <task id="LOCAL-00001" summary="Added rotation related methods">
       <created>1477019032514</created>
@@ -930,11 +930,18 @@
       <option name="project" value="LOCAL" />
       <updated>1481246581208</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="Fixed bugs and refactored some methods">
+      <created>1481246679341</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1481246679341</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="164030000" />
+    <option name="totallyTimeSpent" value="164091000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
